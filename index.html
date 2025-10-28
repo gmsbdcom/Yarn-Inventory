@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    
+
+  </head>
+    
+  <body>
+  <!doctype html>
+<html lang="bn">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>গাড়ি ট্র্যাকিং সিস্টেম</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
+    import { getDatabase, ref, onValue, push, update } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+    
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAC5li_-CNg0EBszOsBe4xjpqr7hyqweWI",
+      authDomain: "greyfabrics-92dbd.firebaseapp.com",
+      databaseURL: "https://greyfabrics-92dbd-default-rtdb.firebaseio.com",
+      projectId: "greyfabrics-92dbd",
+      storageBucket: "greyfabrics-92dbd.firebasestorage.app",
+      messagingSenderId: "147313688926",
+      appId: "1:147313688926:web:2e65894921769990f94fcf",
+      measurementId: "G-9YB3E82P3T"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const database = getDatabase(app);
+    
+    // Make Firebase available globally
+    window.firebaseApp = app;
+    window.firebaseDatabase = database;
+    window.firebaseAnalytics = analytics;
+    window.firebaseRef = ref;
+    window.firebaseOnValue = onValue;
+    window.firebasePush = push;
+    window.firebaseUpdate = update;
+  </script>
+  <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Noto Sans Bengali', Arial, sans-serif;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="min-h-full bg-gradient-to-br from-blue-50 to-indigo-100">
+  <div id="toast-container"></div>
+  <header class="bg-white shadow-lg border-b-4 border-blue-500">
+   <div class="max-w-7xl mx-auto px-4 py-6">
+    <div class="flex items-center justify-between">
+     <div class="flex items-center space-x-4">
+      <div class="bg-blue-500 text-white p-3 rounded-full">
+       <svg class="w-8 h-8" fill="currentColor" viewbox="0 0 20 20"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" /> <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z" />
+       </svg>
+      </div>
+      <div>
+       <h1 id="app-title" class="text-3xl font-bold text-gray-800">Gms Vendor Tracking</h1>
+       <p id="welcome-message" class="text-gray-600">Yarn Inventory</p>
+      </div>
+     </div>
+     <nav class="flex space-x-4"><button onclick="showScreen('entry')" id="entry-tab" class="px-6 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors"> Vehicle In </button> <button onclick="showScreen('exit')" id="exit-tab" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"> Vehicle Out </button> <button onclick="showScreen('dashboard')" id="dashboard-tab" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"> Dashboard </button>
+     </nav>
+    </div>
+   </div>
+  </header>
+  <main class="max-w-7xl mx-auto px-4 py-8"><!-- Entry Screen -->
+   <div id="entry-screen" class="screen">
+    <div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
+     <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Vehicle In Interface</h2>
+     <form id="entry-form" class="space-y-6">
+      <div><label for="car-type" class="block text-sm font-medium text-gray-700 mb-2">গাড়ির ধরণ</label> <select id="car-type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <option value="">নির্বাচন করুন</option> <option value="Import Yarn">Import Yarn</option> <option value="Local Yarn">Local Yarn</option> <option value="S-5 Out Side">S-5 Out Side</option> <option value="Knitting">Knitting</option> <option value="Dyeing">Dyeing</option> </select>
+      </div>
+      <div><label for="car-name" class="block text-sm font-medium text-gray-700 mb-2">গাড়ির নাম</label> <input type="text" id="car-name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="গাড়ির নাম লিখুন">
+      </div>
+      <div><label for="company-name" class="block text-sm font-medium text-gray-700 mb-2">কোম্পানির নাম</label> <input type="text" id="company-name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="কোম্পানির নাম লিখুন">
+      </div>
+      <div><label for="in-time" class="block text-sm font-medium text-gray-700 mb-2">প্রবেশের সময়</label> <input type="datetime-local" id="in-time" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+      <div class="flex space-x-4"><button type="submit" id="entry-submit" class="flex-1 bg-green-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-600 transition-colors"> In </button> <button type="button" onclick="clearEntryForm()" class="flex-1 bg-gray-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-600 transition-colors"> Clear </button>
+      </div>
+     </form>
+    </div>
+   </div><!-- Exit Screen -->
+   <div id="exit-screen" class="screen hidden">
+    <div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
+     <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Vehicle Out Interface</h2>
+     <form id="exit-form" class="space-y-6">
+      <div><label for="exit-car-select" class="block text-sm font-medium text-gray-700 mb-2">গাড়ির নাম নির্বাচন করুন</label> <select id="exit-car-select" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <option value="">কোম্পানির ভিতরে থাকা গাড়ি নির্বাচন করুন</option> </select>
+      </div>
+      <div><label for="exit-person-name" class="block text-sm font-medium text-gray-700 mb-2">যে ব্যক্তি আউট করবে তার নাম</label> <input type="text" id="exit-person-name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="ব্যক্তির নাম লিখুন">
+      </div>
+      <div><label for="out-time" class="block text-sm font-medium text-gray-700 mb-2">প্রস্থানের সময়</label> <input type="datetime-local" id="out-time" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+      <div><label for="exit-comment" class="block text-sm font-medium text-gray-700 mb-2">মন্তব্য (ঐচ্ছিক)</label> <textarea id="exit-comment" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" placeholder="কোন বিশেষ মন্তব্য থাকলে এখানে লিখুন..."></textarea>
+      </div>
+      <div id="duration-display" class="hidden bg-blue-50 p-4 rounded-lg">
+       <h3 class="font-semibold text-blue-800 mb-2">মোট সময়:</h3>
+       <p id="duration-text" class="text-blue-700 text-lg"></p>
+      </div>
+      <div class="flex space-x-4"><button type="submit" id="exit-submit" class="flex-1 bg-red-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-600 transition-colors"> Out </button> <button type="button" onclick="clearExitForm()" class="flex-1 bg-gray-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-600 transition-colors"> Clear </button>
+      </div>
+     </form>
+    </div>
+   </div><!-- Dashboard Screen -->
+   <div id="dashboard-screen" class="screen hidden">
+    <div class="space-y-8">
+     <div class="bg-white rounded-xl shadow-lg p-6">
+      <div class="flex justify-between items-center mb-6">
+       <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
+       <div class="flex space-x-4"><button onclick="refreshDashboard()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"> Refresh </button> <button onclick="exportData()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"> Export </button>
+       </div>
+      </div><!-- Statistics Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+       <div class="bg-blue-50 p-6 rounded-lg">
+        <h3 class="text-sm font-medium text-blue-600 mb-2">মোট গাড়ি</h3>
+        <p id="total-cars" class="text-3xl font-bold text-blue-800">0</p>
+       </div>
+       <div class="bg-green-50 p-6 rounded-lg">
+        <h3 class="text-sm font-medium text-green-600 mb-2">বর্তমানে ভিতরে</h3>
+        <p id="cars-inside" class="text-3xl font-bold text-green-800">0</p>
+       </div>
+       <div class="bg-yellow-50 p-6 rounded-lg">
+        <h3 class="text-sm font-medium text-yellow-600 mb-2">Import Yarn</h3>
+        <p id="import-yarn" class="text-3xl font-bold text-yellow-800">0</p>
+       </div>
+       <div class="bg-purple-50 p-6 rounded-lg">
+        <h3 class="text-sm font-medium text-purple-600 mb-2">Local Yarn</h3>
+        <p id="local-yarn" class="text-3xl font-bold text-purple-800">0</p>
+       </div>
+      </div><!-- Data Table -->
+      <div class="overflow-x-auto">
+       <table class="w-full border-collapse">
+        <thead>
+         <tr class="bg-gray-50">
+          <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">গাড়ির নাম</th>
+          <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">কোম্পানি</th>
+          <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">ধরণ</th>
+          <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">প্রবেশ</th>
+          <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">প্রস্থান</th>
+          <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">মোট সময়</th>
+          <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">আউট করেছে</th>
+          <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">মন্তব্য</th>
+          <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">স্ট্যাটাস</th>
+         </tr>
+        </thead>
+        <tbody id="data-table-body">
+         <tr>
+          <td colspan="9" class="border border-gray-200 px-4 py-8 text-center text-gray-500">কোন ডাটা পাওয়া যায়নি</td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+     </div>
+    </div>
+   </div>
+  </main>
+  <script>
+        let currentData = [];
+        let currentScreen = 'entry';
+        let firebaseInitialized = false;
+
+        // Default configuration
+        const defaultConfig = {
+            app_title: "Gms Vendor Tracking",
+            welcome_message: "Yarn Inventory",
+            primary_color: "#3B82F6",
+            secondary_color: "#F8FAFC",
+            text_color: "#1F2937",
+            success_color: "#10B981",
+            danger_color: "#EF4444"
+        };
+
+        // Firebase Data Handler
+        const firebaseDataHandler = {
+            onDataChanged(data) {
+                currentData = data;
+                updateDashboard();
+                // Update exit dropdown if we're on the exit screen
+                if (currentScreen === 'exit') {
+                    updateExitCarDropdown();
+                }
+            }
+        };
+
+        // Element SDK Configuration
+        const capabilities = {
+            recolorables: [
+                {
+                    get: () => window.elementSdk?.config?.primary_color || defaultConfig.primary_color,
+                    set: (value) => {
+                        if (window.elementSdk) {
+                            window.elementSdk.setConfig({ primary_color: value });
+                        }
+                    }
+                },
+                {
+                    get: () => window.elementSdk?.config?.secondary_color || defaultConfig.secondary_color,
+                    set: (value) => {
+                        if (window.elementSdk) {
+                            window.elementSdk.setConfig({ secondary_color: value });
+                        }
+                    }
+                },
+                {
+                    get: () => window.elementSdk?.config?.text_color || defaultConfig.text_color,
+                    set: (value) => {
+                        if (window.elementSdk) {
+                            window.elementSdk.setConfig({ text_color: value });
+                        }
+                    }
+                },
+                {
+                    get: () => window.elementSdk?.config?.success_color || defaultConfig.success_color,
+                    set: (value) => {
+                        if (window.elementSdk) {
+                            window.elementSdk.setConfig({ success_color: value });
+                        }
+                    }
+                },
+                {
+                    get: () => window.elementSdk?.config?.danger_color || defaultConfig.danger_color,
+                    set: (value) => {
+                        if (window.elementSdk) {
+                            window.elementSdk.setConfig({ danger_color: value });
+                        }
+                    }
+                }
+            ],
+            borderables: [],
+            fontEditable: undefined,
+            fontSizeable: undefined
+        };
+
+        async function onConfigChange(config) {
+            const appTitle = config.app_title || defaultConfig.app_title;
+            const welcomeMessage = config.welcome_message || defaultConfig.welcome_message;
+            
+            document.getElementById('app-title').textContent = appTitle;
+            document.getElementById('welcome-message').textContent = welcomeMessage;
+        }
+
+        function mapToEditPanelValues(config) {
+            return new Map([
+                ["app_title", config.app_title || defaultConfig.app_title],
+                ["welcome_message", config.welcome_message || defaultConfig.welcome_message]
+            ]);
+        }
+
+        // Initialize Firebase and SDKs
+        async function initializeApp() {
+            try {
+                // Wait for Firebase to be initialized
+                if (!window.firebaseDatabase) {
+                    setTimeout(initializeApp, 500);
+                    return;
+                }
+                
+                // Initialize Firebase listener
+                const carsRef = window.firebaseRef(window.firebaseDatabase, 'cars/');
+                window.firebaseOnValue(carsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    const carsArray = data ? Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    })) : [];
+                    firebaseDataHandler.onDataChanged(carsArray);
+                    firebaseInitialized = true;
+                });
+
+                // Initialize Element SDK
+                if (window.elementSdk) {
+                    await window.elementSdk.init({
+                        defaultConfig,
+                        onConfigChange,
+                        mapToCapabilities: () => capabilities,
+                        mapToEditPanelValues
+                    });
+                }
+
+                // Set current time for entry form
+                setCurrentTime();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showToast('Initialization error: ' + error.message, 'error');
+            }
+        }
+
+        // Screen Navigation
+        function showScreen(screenName) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+
+            // Show selected screen
+            document.getElementById(`${screenName}-screen`).classList.remove('hidden');
+
+            // Update tab styles
+            document.querySelectorAll('nav button').forEach(tab => {
+                tab.classList.remove('bg-blue-500', 'text-white');
+                tab.classList.add('bg-gray-200', 'text-gray-700');
+            });
+
+            document.getElementById(`${screenName}-tab`).classList.remove('bg-gray-200', 'text-gray-700');
+            document.getElementById(`${screenName}-tab`).classList.add('bg-blue-500', 'text-white');
+
+            currentScreen = screenName;
+
+            if (screenName === 'exit') {
+                setCurrentTimeForExit();
+                updateExitCarDropdown();
+            } else if (screenName === 'entry') {
+                setCurrentTime();
+            }
+        }
+
+        // Update exit car dropdown with cars currently inside
+        function updateExitCarDropdown() {
+            const dropdown = document.getElementById('exit-car-select');
+            const carsInside = currentData.filter(car => car.status === 'ভিতরে');
+            
+            // Clear existing options except the first one
+            dropdown.innerHTML = '<option value="">কোম্পানির ভিতরে থাকা গাড়ি নির্বাচন করুন</option>';
+            
+            if (carsInside.length === 0) {
+                dropdown.innerHTML = '<option value="">কোন গাড়ি কোম্পানির ভিতরে নেই</option>';
+                return;
+            }
+            
+            carsInside.forEach(car => {
+                const option = document.createElement('option');
+                option.value = car.id;
+                option.textContent = `${car.car_name} (${car.car_type} - ${car.company_name})`;
+                dropdown.appendChild(option);
+            });
+        }
+
+        // Set current time
+        function setCurrentTime() {
+            const now = new Date();
+            const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            document.getElementById('in-time').value = localDateTime;
+        }
+
+        function setCurrentTimeForExit() {
+            const now = new Date();
+            const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            document.getElementById('out-time').value = localDateTime;
+        }
+
+        // Entry Form Handler
+        document.getElementById('entry-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!firebaseInitialized) {
+                showToast('Firebase is not initialized yet. Please wait.', 'error');
+                return;
+            }
+            
+            const carType = document.getElementById('car-type').value;
+            const carName = document.getElementById('car-name').value;
+            const companyName = document.getElementById('company-name').value;
+            const inTime = document.getElementById('in-time').value;
+
+            if (!carType || !carName || !companyName || !inTime) {
+                showToast('সব ফিল্ড পূরণ করুন', 'error');
+                return;
+            }
+
+            if (currentData.length >= 999) {
+                showToast('সর্বোচ্চ ৯৯৯টি রেকর্ডের সীমা পৌঁছেছে। কিছু রেকর্ড মুছে দিন।', 'error');
+                return;
+            }
+
+            const submitButton = document.getElementById('entry-submit');
+            submitButton.classList.add('loading');
+            submitButton.textContent = 'Saving...';
+
+            const carData = {
+                car_name: carName,
+                company_name: companyName,
+                car_type: carType,
+                in_time: new Date(inTime).toISOString(),
+                out_time: '',
+                duration: '',
+                status: 'ভিতরে',
+                exit_person_name: ''
+            };
+
+            try {
+                // Save to Firebase
+                const newCarRef = window.firebasePush(window.firebaseRef(window.firebaseDatabase, 'cars/'));
+                await window.firebaseUpdate(newCarRef, carData);
+                
+                showToast('গাড়ির তথ্য সফলভাবে সেভ হয়েছে', 'success');
+                clearEntryForm();
+            } catch (error) {
+                console.error('Error saving data:', error);
+                showToast('ডাটা সেভ করতে সমস্যা হয়েছে: ' + error.message, 'error');
+            }
+
+            submitButton.classList.remove('loading');
+            submitButton.textContent = 'In';
+        });
+
+        // Exit Form Handler
+        document.getElementById('exit-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!firebaseInitialized) {
+                showToast('Firebase is not initialized yet. Please wait.', 'error');
+                return;
+            }
+            
+            const selectedCarId = document.getElementById('exit-car-select').value;
+            const personName = document.getElementById('exit-person-name').value;
+            const outTime = document.getElementById('out-time').value;
+            const exitComment = document.getElementById('exit-comment').value;
+
+            if (!selectedCarId || !personName || !outTime) {
+                showToast('সব ফিল্ড পূরণ করুন', 'error');
+                return;
+            }
+
+            const existingCar = currentData.find(car => 
+                car.id === selectedCarId && car.status === 'ভিতরে'
+            );
+
+            if (!existingCar) {
+                showToast('নির্বাচিত গাড়িটি পাওয়া যায়নি', 'error');
+                return;
+            }
+
+            const submitButton = document.getElementById('exit-submit');
+            submitButton.classList.add('loading');
+            submitButton.textContent = 'Updating...';
+
+            const inDateTime = new Date(existingCar.in_time);
+            const outDateTime = new Date(outTime);
+            const duration = calculateDuration(inDateTime, outDateTime);
+
+            const updatedCar = {
+                ...existingCar,
+                out_time: outDateTime.toISOString(),
+                duration: duration,
+                status: 'বাহিরে',
+                exit_person_name: personName,
+                exit_comment: exitComment
+            };
+
+            try {
+                // Update in Firebase
+                const carRef = window.firebaseRef(window.firebaseDatabase, 'cars/' + selectedCarId);
+                await window.firebaseUpdate(carRef, updatedCar);
+                
+                showToast('গাড়ির প্রস্থানের তথ্য আপডেট হয়েছে', 'success');
+                showDuration(duration);
+                clearExitForm();
+            } catch (error) {
+                console.error('Error updating data:', error);
+                showToast('ডাটা আপডেট করতে সমস্যা হয়েছে: ' + error.message, 'error');
+            }
+
+            submitButton.classList.remove('loading');
+            submitButton.textContent = 'Out';
+        });
+
+        // Calculate duration
+        function calculateDuration(inTime, outTime) {
+            const diffMs = outTime - inTime;
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            return `${diffHours} ঘন্টা ${diffMinutes} মিনিট`;
+        }
+
+        // Show duration
+        function showDuration(duration) {
+            document.getElementById('duration-text').textContent = duration;
+            document.getElementById('duration-display').classList.remove('hidden');
+        }
+
+        // Clear forms
+        function clearEntryForm() {
+            document.getElementById('entry-form').reset();
+            setCurrentTime();
+        }
+
+        function clearExitForm() {
+            document.getElementById('exit-form').reset();
+            document.getElementById('duration-display').classList.add('hidden');
+            setCurrentTimeForExit();
+            updateExitCarDropdown();
+        }
+
+        // Dashboard functions
+        function updateDashboard() {
+            const totalCars = currentData.length;
+            const carsInside = currentData.filter(car => car.status === 'ভিতরে').length;
+            const importYarn = currentData.filter(car => car.car_type === 'Import Yarn').length;
+            const localYarn = currentData.filter(car => car.car_type === 'Local Yarn').length;
+
+            document.getElementById('total-cars').textContent = totalCars;
+            document.getElementById('cars-inside').textContent = carsInside;
+            document.getElementById('import-yarn').textContent = importYarn;
+            document.getElementById('local-yarn').textContent = localYarn;
+
+            updateDataTable();
+        }
+
+        function updateDataTable() {
+            const tbody = document.getElementById('data-table-body');
+            
+            if (currentData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="border border-gray-200 px-4 py-8 text-center text-gray-500">
+                            কোন ডাটা পাওয়া যায়নি
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = currentData.map(car => {
+                const inTime = new Date(car.in_time).toLocaleString('bn-BD');
+                const outTime = car.out_time ? new Date(car.out_time).toLocaleString('bn-BD') : '-';
+                const statusClass = car.status === 'ভিতরে' ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100';
+                const exitPersonName = car.exit_person_name || '-';
+                const exitComment = car.exit_comment || '-';
+                
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="border border-gray-200 px-4 py-3">${car.car_name}</td>
+                        <td class="border border-gray-200 px-4 py-3">${car.company_name}</td>
+                        <td class="border border-gray-200 px-4 py-3">${car.car_type}</td>
+                        <td class="border border-gray-200 px-4 py-3">${inTime}</td>
+                        <td class="border border-gray-200 px-4 py-3">${outTime}</td>
+                        <td class="border border-gray-200 px-4 py-3">${car.duration || '-'}</td>
+                        <td class="border border-gray-200 px-4 py-3">${exitPersonName}</td>
+                        <td class="border border-gray-200 px-4 py-3 max-w-xs truncate" title="${exitComment}">${exitComment}</td>
+                        <td class="border border-gray-200 px-4 py-3">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold ${statusClass}">
+                                ${car.status}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function refreshDashboard() {
+            updateDashboard();
+            showToast('ড্যাশবোর্ড রিফ্রেশ হয়েছে', 'success');
+        }
+
+        function exportData() {
+            if (currentData.length === 0) {
+                showToast('এক্সপোর্ট করার জন্য কোন ডাটা নেই', 'error');
+                return;
+            }
+
+            const csvContent = generateCSV();
+            downloadCSV(csvContent, 'car-tracking-data.csv');
+            showToast('ডাটা সফলভাবে এক্সপোর্ট হয়েছে', 'success');
+        }
+
+        function generateCSV() {
+            const headers = ['গাড়ির নাম', 'কোম্পানি', 'ধরণ', 'প্রবেশের সময়', 'প্রস্থানের সময়', 'মোট সময়', 'আউট করেছে', 'মন্তব্য', 'স্ট্যাটাস'];
+            const rows = currentData.map(car => [
+                car.car_name,
+                car.company_name,
+                car.car_type,
+                new Date(car.in_time).toLocaleString('bn-BD'),
+                car.out_time ? new Date(car.out_time).toLocaleString('bn-BD') : '',
+                car.duration || '',
+                car.exit_person_name || '',
+                car.exit_comment || '',
+                car.status
+            ]);
+
+            return [headers, ...rows].map(row => row.join(',')).join('\n');
+        }
+
+        function downloadCSV(content, filename) {
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            
+            toast.className = `toast ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg fade-in`;
+            toast.textContent = message;
+            
+            document.getElementById('toast-container').appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Initialize app when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9959447580577e61',t:'MTc2MTY0MjI4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+    
+  </body>
+  
+</html>
