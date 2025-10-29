@@ -3,7 +3,7 @@
 
   <head>
     <meta charset="UTF-8">
-    <title>Untitled</title>
+    <title>Inventory Tracking</title>
     
 
   </head>
@@ -14,15 +14,14 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>গাড়ি ট্র্যাকিং সিস্টেম</title>
+  <title>GMS FIRST TRACKING</title>
   <script src="/_sdk/element_sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Firebase SDK -->
   <script type="module">
     // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
-    import { getDatabase, ref, onValue, push, update } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, update, set, remove } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
     
     // Your web app's Firebase configuration
     const firebaseConfig = {
@@ -38,17 +37,16 @@
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
     const database = getDatabase(app);
     
-    // Make Firebase available globally
-    window.firebaseApp = app;
+    // Make Firebase available globally for the main script
     window.firebaseDatabase = database;
-    window.firebaseAnalytics = analytics;
     window.firebaseRef = ref;
     window.firebaseOnValue = onValue;
     window.firebasePush = push;
     window.firebaseUpdate = update;
+    window.firebaseSet = set;
+    window.firebaseRemove = remove;
   </script>
   <style>
         body {
@@ -197,7 +195,7 @@
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
       </svg></button>
     </div>
-    <nav class="space-y-4"><button onclick="showScreen('entry'); closeMobileMenu();" id="mobile-entry-tab" class="w-full text-left px-4 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors"> Vehicle In </button> <button onclick="showScreen('exit'); closeMobileMenu();" id="mobile-exit-tab" class="w-full text-left px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"> Vehicle Out </button> <button onclick="showScreen('dashboard'); closeMobileMenu();" id="mobile-dashboard-tab" class="w-full text-left px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"> Dashboard </button>
+    <nav class="space-y-4"><button onclick="showScreen('entry'); closeMobileMenu();" id="mobile-entry-tab" class="w-full text-left px-4 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors"> Vehicle In </button> <button onclick="showScreen('exit'); closeMobileMenu();" id="mobile-exit-tab" class="w-full text-left px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"> Vehicle Out </button> <button onclick="showScreen('dashboard'); closeMobileMenu();" id="mobile-dashboard-tab" class="w-full text-left px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"> Dashboard </button> <button onclick="showScreen('message'); closeMobileMenu();" id="mobile-message-tab" class="w-full text-left px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"> Message </button>
     </nav>
    </div>
   </div>
@@ -214,7 +212,7 @@
        <p id="welcome-message" class="header-subtitle text-gray-600">Yarn Inventory</p>
       </div>
      </div><!-- Desktop Navigation -->
-     <nav class="desktop-nav space-x-4"><button onclick="showScreen('entry')" id="entry-tab" class="px-6 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors"> Vehicle In </button> <button onclick="showScreen('exit')" id="exit-tab" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"> Vehicle Out </button> <button onclick="showScreen('dashboard')" id="dashboard-tab" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"> Dashboard </button>
+     <nav class="desktop-nav space-x-4"><button onclick="showScreen('entry')" id="entry-tab" class="px-6 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors"> Vehicle In </button> <button onclick="showScreen('exit')" id="exit-tab" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"> Vehicle Out </button> <button onclick="showScreen('dashboard')" id="dashboard-tab" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"> Dashboard </button> <button onclick="showScreen('message')" id="message-tab" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"> Message </button>
      </nav><!-- Mobile Navigation Button --> <button onclick="openMobileMenu()" class="mobile-nav text-gray-700 hover:text-gray-900">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
       </svg></button>
@@ -271,6 +269,39 @@
       </div>
      </form>
     </div>
+   </div><!-- Message Screen -->
+   <div id="message-screen" class="screen hidden">
+    <div class="space-y-8">
+     <div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Message Board</h2>
+      <form id="message-form" class="space-y-6 mb-8">
+       <div><label for="message-name" class="block text-sm font-medium text-gray-700 mb-2">আপনার নাম</label> <input type="text" id="message-name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="আপনার নাম লিখুন" maxlength="50">
+       </div>
+       <div><label for="message-text" class="block text-sm font-medium text-gray-700 mb-2">মেসেজ (সর্বোচ্চ ৫০০ অক্ষর)</label> <textarea id="message-text" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" placeholder="আপনার মেসেজ লিখুন..." maxlength="500"></textarea>
+        <div class="text-right text-sm text-gray-500 mt-1"><span id="char-count">0</span>/500
+        </div>
+       </div>
+       <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+        <div class="flex items-center">
+         <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewbox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+         </svg><span class="text-yellow-800 text-sm font-medium">মেসেজটি ২৪ ঘন্টা পর অটোমেটিক ডিলিট হয়ে যাবে</span>
+        </div>
+       </div>
+       <div class="flex space-x-4 mobile-stack"><button type="submit" id="message-submit" class="flex-1 bg-blue-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-600 transition-colors"> Send Message </button> <button type="button" onclick="clearMessageForm()" class="flex-1 bg-gray-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-600 transition-colors"> Clear </button>
+       </div>
+      </form>
+     </div><!-- Messages Display -->
+     <div class="bg-white rounded-xl shadow-lg p-6">
+      <div class="flex justify-between items-center mb-6">
+       <h3 class="text-xl font-bold text-gray-800">সব মেসেজ</h3><button onclick="refreshMessages()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"> Refresh </button>
+      </div>
+      <div id="messages-container" class="space-y-4">
+       <div class="text-center text-gray-500 py-8">
+        No messages yet
+       </div>
+      </div>
+     </div>
+    </div>
    </div><!-- Dashboard Screen -->
    <div id="dashboard-screen" class="screen hidden">
     <div class="space-y-8">
@@ -279,23 +310,57 @@
        <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
        <div class="flex space-x-4 mobile-stack w-full sm:w-auto"><button onclick="refreshDashboard()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex-1 sm:flex-none"> Refresh </button> <button onclick="exportData()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors flex-1 sm:flex-none"> Export </button>
        </div>
+      </div><!-- Date Filter Section -->
+      <div class="bg-gray-50 p-4 rounded-lg mb-6">
+       <h3 class="text-lg font-semibold text-gray-700 mb-4">তারিখ অনুযায়ী ফিল্টার</h3>
+       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div><label for="filter-from-date" class="block text-sm font-medium text-gray-700 mb-2">শুরুর তারিখ</label> <input type="date" id="filter-from-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+        <div><label for="filter-to-date" class="block text-sm font-medium text-gray-700 mb-2">শেষের তারিখ</label> <input type="date" id="filter-to-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+        <div><label for="filter-status" class="block text-sm font-medium text-gray-700 mb-2">স্ট্যাটাস</label> <select id="filter-status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <option value="">সব স্ট্যাটাস</option> <option value="ভিতরে">ভিতরে</option> <option value="বাহিরে">বাহিরে</option> </select>
+        </div>
+        <div class="flex space-x-2"><button onclick="applyDateFilter()" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors flex-1"> ফিল্টার করুন </button> <button onclick="clearDateFilter()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors flex-1"> রিসেট </button>
+        </div>
+       </div><!-- Quick Date Filters -->
+       <div class="mt-4 flex flex-wrap gap-2"><span class="text-sm font-medium text-gray-700 mr-2">দ্রুত নির্বাচন:</span> <button onclick="setQuickFilter('today')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm hover:bg-blue-200 transition-colors"> আজ </button> <button onclick="setQuickFilter('yesterday')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm hover:bg-blue-200 transition-colors"> গতকাল </button> <button onclick="setQuickFilter('thisWeek')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm hover:bg-blue-200 transition-colors"> এই সপ্তাহ </button> <button onclick="setQuickFilter('thisMonth')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm hover:bg-blue-200 transition-colors"> এই মাস </button>
+       </div><!-- Filter Status Display -->
+       <div id="filter-status-display" class="mt-3 text-sm text-gray-600 hidden"><span class="font-medium">ফিল্টার সক্রিয়:</span> <span id="filter-description"></span>
+       </div>
       </div><!-- Statistics Cards -->
       <div class="stats-grid grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
        <div class="bg-blue-50 p-6 rounded-lg">
-        <h3 class="text-sm font-medium text-blue-600 mb-2">Total Cars</h3>
-        <p id="total-cars" class="text-3xl font-bold text-blue-800">0</p>
+        <h3 class="text-sm font-medium text-blue-600 mb-3">Total Cars</h3>
+        <div class="space-y-1">
+         <div class="flex justify-between items-center"><span class="text-sm text-green-600 font-medium">IN:</span> <span id="total-in" class="text-lg font-bold text-green-700">0</span>
+         </div>
+         <div class="flex justify-between items-center"><span class="text-sm text-red-600 font-medium">OUT:</span> <span id="total-out" class="text-lg font-bold text-red-700">0</span>
+         </div>
+        </div>
        </div>
        <div class="bg-green-50 p-6 rounded-lg">
-        <h3 class="text-sm font-medium text-green-600 mb-2">Currently Inside</h3>
-        <p id="cars-inside" class="text-3xl font-bold text-green-800">0</p>
+        <h3 class="text-sm font-medium text-green-600 mb-3">Currently Inside</h3>
+        <div class="text-center">
+         <p id="cars-inside" class="text-3xl font-bold text-green-800">0</p>
+        </div>
        </div>
        <div class="bg-yellow-50 p-6 rounded-lg">
-        <h3 class="text-sm font-medium text-yellow-600 mb-2">Import Yarn</h3>
-        <p id="import-yarn" class="text-3xl font-bold text-yellow-800">0</p>
+        <h3 class="text-sm font-medium text-yellow-600 mb-3">Import Yarn</h3>
+        <div class="space-y-1">
+         <div class="flex justify-between items-center"><span class="text-sm text-green-600 font-medium">IN:</span> <span id="import-yarn-in" class="text-lg font-bold text-green-700">0</span>
+         </div>
+         <div class="flex justify-between items-center"><span class="text-sm text-red-600 font-medium">OUT:</span> <span id="import-yarn-out" class="text-lg font-bold text-red-700">0</span>
+         </div>
+        </div>
        </div>
        <div class="bg-purple-50 p-6 rounded-lg">
-        <h3 class="text-sm font-medium text-purple-600 mb-2">Local Yarn</h3>
-        <p id="local-yarn" class="text-3xl font-bold text-purple-800">0</p>
+        <h3 class="text-sm font-medium text-purple-600 mb-3">Local Yarn</h3>
+        <div class="space-y-1">
+         <div class="flex justify-between items-center"><span class="text-sm text-green-600 font-medium">IN:</span> <span id="local-yarn-in" class="text-lg font-bold text-green-700">0</span>
+         </div>
+         <div class="flex justify-between items-center"><span class="text-sm text-red-600 font-medium">OUT:</span> <span id="local-yarn-out" class="text-lg font-bold text-red-700">0</span>
+         </div>
+        </div>
        </div>
       </div><!-- Data Table -->
       <div class="table-container overflow-x-auto">
@@ -327,8 +392,10 @@
   </main>
   <script>
         let currentData = [];
+        let filteredData = [];
         let currentScreen = 'entry';
-        let firebaseInitialized = false;
+        let activeFilter = null;
+        let messageData = [];
 
         // Default configuration
         const defaultConfig = {
@@ -341,12 +408,21 @@
             danger_color: "#EF4444"
         };
 
-        // Firebase Data Handler
-        const firebaseDataHandler = {
+        // Data Handler for Firebase
+        const dataHandler = {
             onDataChanged(data) {
                 console.log('📊 Data updated:', data.length, 'records');
-                currentData = data;
+                
+                // Separate car data and message data
+                const carRecords = data.filter(record => !record.message_type);
+                const messageRecords = data.filter(record => record.message_type === 'message');
+                
+                currentData = carRecords;
+                messageData = messageRecords;
+                
                 updateDashboard();
+                updateMessagesDisplay();
+                
                 // Update exit dropdown if we're on the exit screen
                 if (currentScreen === 'exit') {
                     updateExitCarDropdown();
@@ -356,6 +432,9 @@
                 if (data.length > 0) {
                     showToast(`📋 ডাটা আপডেট: ${data.length}টি রেকর্ড লোড হয়েছে`, 'info');
                 }
+                
+                // Auto-delete messages older than 24 hours
+                cleanupOldMessages();
             }
         };
 
@@ -428,26 +507,23 @@
             try {
                 showToast('🚀 সিস্টেম শুরু হচ্ছে...', 'info');
                 
-                // Wait for Firebase to be initialized
-                if (!window.firebaseDatabase) {
-                    setTimeout(initializeApp, 500);
-                    return;
-                }
-                
                 // Initialize Firebase listener
-                const carsRef = window.firebaseRef(window.firebaseDatabase, 'cars/');
-                window.firebaseOnValue(carsRef, (snapshot) => {
-                    const data = snapshot.val();
-                    const carsArray = data ? Object.keys(data).map(key => ({
-                        id: key,
-                        ...data[key]
-                    })) : [];
-                    firebaseDataHandler.onDataChanged(carsArray);
-                    firebaseInitialized = true;
-                });
-                
-                showToast('✅ ফায়ারবেস সফলভাবে সংযুক্ত হয়েছে', 'success');
-                console.log('✅ Firebase initialized successfully');
+                if (window.firebaseDatabase) {
+                    const dbRef = window.firebaseRef(window.firebaseDatabase, '/');
+                    window.firebaseOnValue(dbRef, (snapshot) => {
+                        const data = snapshot.val();
+                        const dataArray = data ? Object.keys(data).map(key => ({
+                            id: key,
+                            ...data[key]
+                        })) : [];
+                        dataHandler.onDataChanged(dataArray);
+                    });
+                     showToast('✅ ফায়ারবেস সফলভাবে সংযুক্ত হয়েছে', 'success');
+                     console.log('✅ Firebase initialized successfully');
+                } else {
+                    showToast('⚠️ ফায়ারবেস উপলব্ধ নেই', 'error');
+                    console.error('⚠️ Firebase not available');
+                }
 
                 // Initialize Element SDK
                 if (window.elementSdk) {
@@ -530,6 +606,8 @@
                 updateExitCarDropdown();
             } else if (screenName === 'entry') {
                 setCurrentTime();
+            } else if (screenName === 'message') {
+                updateMessagesDisplay();
             }
         }
 
@@ -702,25 +780,23 @@
                 loadPointTimes[selectedLoadPoint] = new Date().toISOString();
             }
             
-            const updatedCar = {
-                ...existingCar,
+            const updatedCarData = {
                 load_points: JSON.stringify(loadPoints),
                 load_point_times: JSON.stringify(loadPointTimes),
                 current_load_point: selectedLoadPoint
             };
             
-            try {
-                // Update in Firebase
-                const carRef = window.firebaseRef(window.firebaseDatabase, 'cars/' + selectedCarId);
-                await window.firebaseUpdate(carRef, updatedCar);
-                
-                showToast(`Load Point "${selectedLoadPoint}" আপডেট হয়েছে`, 'success');
-                document.getElementById('load-point-select').value = '';
-                loadCurrentLoadPointHistory(updatedCar);
-                updateLoadPointButtons();
-            } catch (error) {
-                console.error('Error updating load point:', error);
-                showToast('Load Point আপডেট করতে সমস্যা হয়েছে: ' + error.message, 'error');
+            if (window.firebaseDatabase) {
+                try {
+                    const carRef = window.firebaseRef(window.firebaseDatabase, '/' + selectedCarId);
+                    await window.firebaseUpdate(carRef, updatedCarData);
+                    showToast(`Load Point "${selectedLoadPoint}" আপডেট হয়েছে`, 'success');
+                    document.getElementById('load-point-select').value = '';
+                    updateLoadPointButtons();
+                } catch(error) {
+                    showToast('Load Point আপডেট করতে সমস্যা হয়েছে', 'error');
+                    console.error("Firebase update error:", error);
+                }
             }
             
             this.classList.remove('loading');
@@ -744,11 +820,6 @@
         document.getElementById('entry-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            if (!firebaseInitialized) {
-                showToast('Firebase is not initialized yet. Please wait.', 'error');
-                return;
-            }
-            
             const carType = document.getElementById('car-type').value;
             const carName = document.getElementById('car-name').value;
             const companyName = document.getElementById('company-name').value;
@@ -769,7 +840,6 @@
             submitButton.textContent = '💾 সেভ হচ্ছে...';
             submitButton.disabled = true;
 
-            // Show saving toast
             showToast('গাড়ির তথ্য সেভ করা হচ্ছে...', 'info');
 
             const carData = {
@@ -788,20 +858,17 @@
             };
 
             try {
-                // Save to Firebase
-                const newCarRef = window.firebasePush(window.firebaseRef(window.firebaseDatabase, 'cars/'));
-                await window.firebaseUpdate(newCarRef, carData);
-                
-                showToast(`✅ "${carName}" গাড়িটি সফলভাবে ইন হয়েছে!`, 'success');
-                clearEntryForm();
-                
-                // Show success message with car details
-                setTimeout(() => {
-                    showToast(`📋 মোট ${currentData.length + 1}টি গাড়ি রেকর্ড করা হয়েছে`, 'info');
-                }, 1000);
+                if (window.firebaseDatabase) {
+                    const newCarRef = window.firebasePush(window.firebaseRef(window.firebaseDatabase, '/'));
+                    await window.firebaseSet(newCarRef, carData);
+                    showToast(`✅ "${carName}" গাড়িটি সফলভাবে ইন হয়েছে!`, 'success');
+                    clearEntryForm();
+                } else {
+                    showToast('❌ ডাটা সিস্টেম উপলব্ধ নেই', 'error');
+                }
             } catch (error) {
-                console.error('Error saving data:', error);
-                showToast('❌ ডাটা সেভ করতে সমস্যা হয়েছে: ' + error.message, 'error');
+                showToast('❌ সিস্টেম এরর: ' + error.message, 'error');
+                console.error('System error:', error);
             }
 
             submitButton.classList.remove('loading');
@@ -812,11 +879,6 @@
         // Exit Form Handler
         document.getElementById('exit-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            if (!firebaseInitialized) {
-                showToast('Firebase is not initialized yet. Please wait.', 'error');
-                return;
-            }
             
             const selectedCarId = document.getElementById('exit-car-select').value;
             const personName = document.getElementById('exit-person-name').value;
@@ -845,8 +907,7 @@
             const outDateTime = new Date(outTime);
             const duration = calculateDuration(inDateTime, outDateTime);
 
-            const updatedCar = {
-                ...existingCar,
+            const updatedCarData = {
                 out_time: outDateTime.toISOString(),
                 duration: duration,
                 status: 'বাহিরে',
@@ -854,17 +915,17 @@
                 exit_comment: exitComment
             };
 
-            try {
-                // Update in Firebase
-                const carRef = window.firebaseRef(window.firebaseDatabase, 'cars/' + selectedCarId);
-                await window.firebaseUpdate(carRef, updatedCar);
-                
-                showToast('গাড়ির প্রস্থানের তথ্য আপডেট হয়েছে', 'success');
-                showDuration(duration);
-                clearExitForm();
-            } catch (error) {
-                console.error('Error updating data:', error);
-                showToast('ডাটা আপডেট করতে সমস্যা হয়েছে: ' + error.message, 'error');
+            if (window.firebaseDatabase) {
+                 try {
+                    const carRef = window.firebaseRef(window.firebaseDatabase, '/' + selectedCarId);
+                    await window.firebaseUpdate(carRef, updatedCarData);
+                    showToast('গাড়ির প্রস্থানের তথ্য আপডেট হয়েছে', 'success');
+                    showDuration(duration);
+                    clearExitForm();
+                } catch(error) {
+                    showToast('ডাটা আপডেট করতে সমস্যা হয়েছে', 'error');
+                    console.error("Firebase update error:", error);
+                }
             }
 
             submitButton.classList.remove('loading');
@@ -905,34 +966,58 @@
 
         // Dashboard functions
         function updateDashboard() {
-            const totalCars = currentData.length;
-            const carsInside = currentData.filter(car => car.status === 'ভিতরে').length;
-            const importYarn = currentData.filter(car => car.car_type === 'Import Yarn').length;
-            const localYarn = currentData.filter(car => car.car_type === 'Local Yarn').length;
+            const dataToShow = activeFilter ? filteredData : currentData;
+            
+            // Total Cars Statistics
+            const totalIn = dataToShow.length;
+            const totalOut = dataToShow.filter(car => car.status === 'বাহিরে').length;
+            const carsInside = dataToShow.filter(car => car.status === 'ভিতরে').length;
+            
+            // Import Yarn Statistics
+            const importYarnData = dataToShow.filter(car => car.car_type === 'Import Yarn');
+            const importYarnIn = importYarnData.length;
+            const importYarnOut = importYarnData.filter(car => car.status === 'বাহিরে').length;
+            
+            // Local Yarn Statistics
+            const localYarnData = dataToShow.filter(car => car.car_type === 'Local Yarn');
+            const localYarnIn = localYarnData.length;
+            const localYarnOut = localYarnData.filter(car => car.status === 'বাহিরে').length;
 
-            document.getElementById('total-cars').textContent = totalCars;
+            // Update Total Cars
+            document.getElementById('total-in').textContent = totalIn;
+            document.getElementById('total-out').textContent = totalOut;
+            
+            // Update Currently Inside
             document.getElementById('cars-inside').textContent = carsInside;
-            document.getElementById('import-yarn').textContent = importYarn;
-            document.getElementById('local-yarn').textContent = localYarn;
+            
+            // Update Import Yarn
+            document.getElementById('import-yarn-in').textContent = importYarnIn;
+            document.getElementById('import-yarn-out').textContent = importYarnOut;
+            
+            // Update Local Yarn
+            document.getElementById('local-yarn-in').textContent = localYarnIn;
+            document.getElementById('local-yarn-out').textContent = localYarnOut;
 
             updateDataTable();
         }
 
         function updateDataTable() {
             const tbody = document.getElementById('data-table-body');
+            const dataToShow = activeFilter ? filteredData.sort((a,b) => new Date(b.in_time) - new Date(a.in_time)) : currentData.sort((a,b) => new Date(b.in_time) - new Date(a.in_time));
             
-            if (currentData.length === 0) {
+            if (dataToShow.length === 0) {
+                const message = activeFilter ? 'ফিল্টার অনুযায়ী কোন ডাটা পাওয়া যায়নি' : 'No data found';
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="10" class="border border-gray-200 px-4 py-8 text-center text-gray-500">
-                            No data found
+                            ${message}
                         </td>
                     </tr>
                 `;
                 return;
             }
 
-            tbody.innerHTML = currentData.map(car => {
+            tbody.innerHTML = dataToShow.map(car => {
                 const inTime = new Date(car.in_time).toLocaleString('en-US', {
                     month: 'short',
                     day: '2-digit',
@@ -996,21 +1081,154 @@
             showToast('ড্যাশবোর্ড রিফ্রেশ হয়েছে', 'success');
         }
 
+        // Date Filter Functions
+        function applyDateFilter() {
+            const fromDate = document.getElementById('filter-from-date').value;
+            const toDate = document.getElementById('filter-to-date').value;
+            const status = document.getElementById('filter-status').value;
+
+            if (!fromDate && !toDate && !status) {
+                showToast('অন্তত একটি ফিল্টার নির্বাচন করুন', 'error');
+                return;
+            }
+
+            filteredData = currentData.filter(car => {
+                let matchesDate = true;
+                let matchesStatus = true;
+
+                if (fromDate || toDate) {
+                    const carDateObj = new Date(car.in_time);
+                    
+                    if (fromDate) {
+                        const fromDateObj = new Date(fromDate);
+                        fromDateObj.setHours(0, 0, 0, 0);
+                        matchesDate = matchesDate && carDateObj >= fromDateObj;
+                    }
+                    
+                    if (toDate) {
+                        const toDateObj = new Date(toDate);
+                        toDateObj.setHours(23, 59, 59, 999);
+                        matchesDate = matchesDate && carDateObj <= toDateObj;
+                    }
+                }
+
+                if (status) {
+                    matchesStatus = car.status === status;
+                }
+
+                return matchesDate && matchesStatus;
+            });
+
+            activeFilter = {
+                fromDate,
+                toDate,
+                status
+            };
+
+            updateFilterStatusDisplay();
+            updateDashboard();
+            
+            const resultCount = filteredData.length;
+            showToast(`ফিল্টার প্রয়োগ হয়েছে - ${resultCount}টি রেকর্ড পাওয়া গেছে`, 'success');
+        }
+
+        function clearDateFilter() {
+            document.getElementById('filter-from-date').value = '';
+            document.getElementById('filter-to-date').value = '';
+            document.getElementById('filter-status').value = '';
+            
+            activeFilter = null;
+            filteredData = [];
+            
+            document.getElementById('filter-status-display').classList.add('hidden');
+            updateDashboard();
+            showToast('ফিল্টার রিসেট হয়েছে', 'success');
+        }
+
+        function setQuickFilter(type) {
+            const today = new Date();
+            let fromDate, toDate;
+
+            switch (type) {
+                case 'today':
+                    fromDate = toDate = today.toISOString().split('T')[0];
+                    break;
+                case 'yesterday':
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    fromDate = toDate = yesterday.toISOString().split('T')[0];
+                    break;
+                case 'thisWeek':
+                    const dayOfWeek = today.getDay();
+                    const startOfWeek = new Date(today);
+                    startOfWeek.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)); // Adjust for Sunday
+                    fromDate = startOfWeek.toISOString().split('T')[0];
+                    toDate = today.toISOString().split('T')[0];
+                    break;
+                case 'thisMonth':
+                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    fromDate = startOfMonth.toISOString().split('T')[0];
+                    toDate = today.toISOString().split('T')[0];
+                    break;
+            }
+
+            document.getElementById('filter-from-date').value = fromDate;
+            document.getElementById('filter-to-date').value = toDate;
+            document.getElementById('filter-status').value = '';
+
+            applyDateFilter();
+        }
+
+        function updateFilterStatusDisplay() {
+            const display = document.getElementById('filter-status-display');
+            const description = document.getElementById('filter-description');
+            
+            if (!activeFilter) {
+                display.classList.add('hidden');
+                return;
+            }
+
+            let filterText = [];
+            
+            if (activeFilter.fromDate && activeFilter.toDate) {
+                if (activeFilter.fromDate === activeFilter.toDate) {
+                    filterText.push(`তারিখ: ${new Date(activeFilter.fromDate + 'T00:00:00').toLocaleDateString('bn-BD')}`);
+                } else {
+                    filterText.push(`তারিখ: ${new Date(activeFilter.fromDate + 'T00:00:00').toLocaleDateString('bn-BD')} থেকে ${new Date(activeFilter.toDate + 'T00:00:00').toLocaleDateString('bn-BD')}`);
+                }
+            } else if (activeFilter.fromDate) {
+                filterText.push(`${new Date(activeFilter.fromDate + 'T00:00:00').toLocaleDateString('bn-BD')} এর পর থেকে`);
+            } else if (activeFilter.toDate) {
+                filterText.push(`${new Date(activeFilter.toDate + 'T00:00:00').toLocaleDateString('bn-BD')} পর্যন্ত`);
+            }
+            
+            if (activeFilter.status) {
+                filterText.push(`স্ট্যাটাস: ${activeFilter.status}`);
+            }
+            
+            description.textContent = filterText.join(', ');
+            display.classList.remove('hidden');
+        }
+
         function exportData() {
-            if (currentData.length === 0) {
+            const dataToExport = activeFilter ? filteredData : currentData;
+            
+            if (dataToExport.length === 0) {
                 showToast('এক্সপোর্ট করার জন্য কোন ডাটা নেই', 'error');
                 return;
             }
 
-            const csvContent = generateCSV();
-            downloadCSV(csvContent, 'car-tracking-data.csv');
-            showToast('ডাটা সফলভাবে এক্সপোর্ট হয়েছে', 'success');
+            const csvContent = generateCSV(dataToExport);
+            const filename = activeFilter ? 'filtered-car-tracking-data.csv' : 'car-tracking-data.csv';
+            downloadCSV(csvContent, filename);
+            
+            const filterText = activeFilter ? ' (ফিল্টার করা)' : '';
+            showToast(`${dataToExport.length}টি রেকর্ড সফলভাবে এক্সপোর্ট হয়েছে${filterText}`, 'success');
         }
 
-        function generateCSV() {
+        function generateCSV(dataToExport = currentData) {
             const headers = ['গাড়ির নাম', 'কোম্পানি', 'ধরণ', 'প্রবেশের সময়', 'প্রস্থানের সময়', 'মোট সময়', 'Load Points', 'আউট করেছে', 'মন্তব্য', 'স্ট্যাটাস'];
-            const rows = currentData.map(car => {
-                // Format load points for CSV
+            const rows = dataToExport.map(car => {
                 let loadPointsCSV = '';
                 if (car.load_points && car.load_points !== '') {
                     try {
@@ -1020,7 +1238,7 @@
                         loadPointsCSV = loadPoints.map((point, index) => {
                             const time = loadPointTimes[point] ? new Date(loadPointTimes[point]).toLocaleString('bn-BD') : '';
                             const duration = index > 0 ? calculateLoadPointDuration(loadPointTimes, loadPoints, index) : '';
-                            return `${point}${time ? ` (${time})` : ''}${duration ? ` [${duration}]` : ''}`;
+                            return `"${point}${time ? ` (${time})` : ''}${duration ? ` [${duration}]` : ''}"`;
                         }).join('; ');
                     } catch (e) {
                         loadPointsCSV = '';
@@ -1028,24 +1246,24 @@
                 }
                 
                 return [
-                    car.car_name,
-                    car.company_name,
-                    car.car_type,
-                    new Date(car.in_time).toLocaleString('bn-BD'),
-                    car.out_time ? new Date(car.out_time).toLocaleString('bn-BD') : '',
-                    car.duration || '',
-                    loadPointsCSV,
-                    car.exit_person_name || '',
-                    car.exit_comment || '',
-                    car.status
+                    `"${car.car_name}"`,
+                    `"${car.company_name}"`,
+                    `"${car.car_type}"`,
+                    `"${new Date(car.in_time).toLocaleString('bn-BD')}"`,
+                    `"${car.out_time ? new Date(car.out_time).toLocaleString('bn-BD') : ''}"`,
+                    `"${car.duration || ''}"`,
+                    `"${loadPointsCSV}"`,
+                    `"${car.exit_person_name || ''}"`,
+                    `"${(car.exit_comment || '').replace(/"/g, '""')}"`,
+                    `"${car.status}"`
                 ];
             });
 
-            return [headers, ...rows].map(row => row.join(',')).join('\n');
+            return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
         }
 
         function downloadCSV(content, filename) {
-            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const blob = new Blob(["\uFEFF" + content], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
@@ -1056,7 +1274,6 @@
             document.body.removeChild(link);
         }
 
-        // Toast notification
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
             const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
@@ -1071,10 +1288,148 @@
             }, 3000);
         }
 
+        document.getElementById('message-text').addEventListener('input', function() {
+            const charCount = this.value.length;
+            document.getElementById('char-count').textContent = charCount;
+        });
+
+        document.getElementById('message-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const messageName = document.getElementById('message-name').value.trim();
+            const messageText = document.getElementById('message-text').value.trim();
+
+            if (!messageName || !messageText) {
+                showToast('নাম এবং মেসেজ দুটোই লিখুন', 'error');
+                return;
+            }
+
+            const submitButton = document.getElementById('message-submit');
+            submitButton.classList.add('loading');
+            submitButton.textContent = 'Sending...';
+            submitButton.disabled = true;
+
+            const messageRecord = {
+                message_name: messageName,
+                message_text: messageText,
+                message_time: new Date().toISOString(),
+                message_type: 'message'
+            };
+
+            try {
+                if (window.firebaseDatabase) {
+                    const newMessageRef = window.firebasePush(window.firebaseRef(window.firebaseDatabase, '/'));
+                    await window.firebaseSet(newMessageRef, messageRecord);
+                    showToast(`✅ "${messageName}" এর মেসেজ পাঠানো হয়েছে!`, 'success');
+                    clearMessageForm();
+                } else {
+                    showToast('❌ মেসেজ সিস্টেম উপলব্ধ নেই', 'error');
+                }
+            } catch (error) {
+                showToast('❌ সিস্টেম এরর: ' + error.message, 'error');
+            }
+
+            submitButton.classList.remove('loading');
+            submitButton.textContent = 'Send Message';
+            submitButton.disabled = false;
+        });
+
+        function clearMessageForm() {
+            document.getElementById('message-form').reset();
+            document.getElementById('char-count').textContent = 0;
+        }
+
+        function updateMessagesDisplay() {
+            const container = document.getElementById('messages-container');
+            
+            if (messageData.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-500 py-8">No messages yet</div>`;
+                return;
+            }
+
+            const sortedMessages = [...messageData].sort((a, b) => new Date(b.message_time) - new Date(a.message_time));
+
+            container.innerHTML = sortedMessages.map(message => {
+                const messageTime = new Date(message.message_time);
+                const timeAgo = getTimeAgo(messageTime);
+                const timeLeft = getTimeLeft(messageTime);
+                
+                return `
+                    <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-semibold text-gray-800">${message.message_name}</h4>
+                            <div class="text-right">
+                                <div class="text-xs text-gray-500">${timeAgo}</div>
+                                <div class="text-xs text-red-500">${timeLeft}</div>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 whitespace-pre-wrap">${message.message_text}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTimeAgo(messageTime) {
+            const now = new Date();
+            const diffMs = now - messageTime;
+            const diffMinutes = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMinutes / 60);
+            
+            if (diffHours > 0) return `${diffHours} ঘন্টা আগে`;
+            if (diffMinutes > 0) return `${diffMinutes} মিনিট আগে`;
+            return 'এইমাত্র';
+        }
+
+        function getTimeLeft(messageTime) {
+            const deleteTime = new Date(messageTime.getTime() + 24 * 60 * 60 * 1000);
+            const now = new Date();
+            const diffMs = deleteTime - now;
+            
+            if (diffMs <= 0) return 'ডিলিট হবে';
+            
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (diffHours > 0) return `${diffHours}ঘ ${diffMinutes}মি বাকি`;
+            return `${diffMinutes}মি বাকি`;
+        }
+
+        function refreshMessages() {
+            updateMessagesDisplay();
+            showToast('মেসেজ রিফ্রেশ হয়েছে', 'success');
+        }
+
+        async function cleanupOldMessages() {
+            const now = new Date();
+            const messagesToDelete = messageData.filter(message => {
+                const messageTime = new Date(message.message_time);
+                const diffHours = (now - messageTime) / (1000 * 60 * 60);
+                return diffHours >= 24;
+            });
+
+            if (messagesToDelete.length > 0 && window.firebaseDatabase) {
+                let deletedCount = 0;
+                for (const message of messagesToDelete) {
+                    try {
+                        const messageRef = window.firebaseRef(window.firebaseDatabase, '/' + message.id);
+                        await window.firebaseRemove(messageRef);
+                        console.log(`🗑️ Auto-deleted message from ${message.message_name}`);
+                        deletedCount++;
+                    } catch (error) {
+                        console.error('Error deleting old message:', error);
+                    }
+                }
+                
+                if (deletedCount > 0) {
+                    showToast(`🗑️ ${deletedCount}টি পুরানো মেসেজ অটো ডিলিট হয়েছে`, 'info');
+                }
+            }
+        }
+
         // Initialize app when page loads
         document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'995a7b7a01247e61',t:'MTc2MTY1NTAyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ </body>
 </html>
     
   </body>
